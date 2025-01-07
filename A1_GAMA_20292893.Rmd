@@ -1,0 +1,95 @@
+---
+title: "Analysis of tree frog limb measurements"
+author: "Sara Gama"
+date: "2025-01-07"
+output: html_document
+---
+
+My GitHub repository is accessible here (<https://github.com/SaraGama4/BIOL432_Assignment1_SG>).
+
+## 1: Loading files
+
+Load required libraries
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+I loaded the revised 'measurements.csv' file which now includes the 'Volume' column. I also loaded in my generated data and estimated volume scripts.
+
+In the generated data script I chose five Canadian tree frog species and put them in a vector which I then randomly sampled from for a total of n= 100. I did the same process for generating three recorded names from observations. As for generating hypothetical values for limb width and lengths, I set plausible parameters for the normal distribution including a mean and standard deviation for both variables. This was followed by generating 100 random values from said normal distribution. Finally I combined all of the vectors to be separate columns in a csv file!
+
+In the estimated volume script I read the csv file into a data frame and estimated limb volume using the formula for the volume of a cylinder (for biological relevance). I then mutated the values for each calculation into rows of a new column labelled "volume".
+
+```{r}
+source("C:/Users/sgama/Downloads/432/BIOL432_Assignment1_SG/dataGenerato.R")
+
+source("C:/Users/sgama/Downloads/432/BIOL432_Assignment1_SG/volumeEstimato.R")
+
+read.csv("C:/Users/sgama/Downloads/432/BIOL432_Assignment1_SG/measurements.csv")
+
+```
+
+## 2: Sorting the data
+
+I sorted the data first by species, then by observer, and by the limb volume using the arrange function
+
+```{r}
+sorted_df <- measurements_df %>%
+  arrange(random_species, random_observer, Volume)
+
+head(sorted_df)
+```
+
+## 3: Calculating averages for a variable of interest
+
+I calculated the average limb volume for each species in a table
+
+```{r}
+avg_vol_species <- measurements_df %>%
+  group_by(random_species) %>%
+  summarize(avg_vol = mean(Volume, na.rm = TRUE))
+
+avg_vol_species
+
+```
+
+## 4: Counting the number of observations occurring in two variables
+
+I made a table for the number of observations (rows) for each combination of species and observer.
+
+```{r}
+obs_species_observer <- measurements_df %>%
+  group_by(random_species, random_observer) %>%
+  summarise(num_obs = n())
+
+obs_species_observer
+```
+
+## 5: Visualizing tree frog limb volume distributions
+
+I created a box plot comparing limb volumes for each species
+
+```{r, fig.dim = c(8, 5)}
+ggplot(measurements_df, aes(x = random_species, y = Volume)) +
+  geom_boxplot(aes(fill = random_species)) +
+  labs(title = "Limb Volumes by Species",
+       x = "Tree Frog Species",
+       y = "Limb Volume (cm³)") +
+  theme_light()
+```
+
+## 6: Visualizing distributions of limb volumes in a histogram
+
+I created a multi-panel plot of frequency histograms by species
+
+```{r}
+ggplot(measurements_df, aes(x = Volume)) +
+  geom_histogram(aes(fill = random_species),binwidth = 3) +
+  facet_wrap(~random_species) +
+  labs(title = "Distribution of Limb Volumes by Species",
+       x = "Limb Volume (cm³)",
+       y = "Frequency") +
+  theme_light()
+```
